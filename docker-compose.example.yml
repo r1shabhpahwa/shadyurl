@@ -1,0 +1,35 @@
+services:
+   #--- Shady App ---
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shady-app
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    networks:
+      - shady-network
+
+  # --- Database Service ---
+  database:
+    image: postgres:15
+    container_name: shady-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: shadydb
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - shady-network
+
+networks:
+  shady-network:
+    driver: bridge
+
+volumes:
+  pgdata:

@@ -48,3 +48,4 @@ CLAUDE.md
 
 # Docker
 docker-compose.yml
+/generated/prisma
