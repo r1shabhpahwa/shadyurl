@@ -1,0 +1,35 @@
+# Traefik Dynamic Configuration - Middlewares
+# Docs: https://doc.traefik.io/traefik/middlewares/overview/
+
+http:
+  middlewares:
+    # Security Headers
+    security-headers:
+      headers:
+        frameDeny: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+        customFrameOptionsValue: "SAMEORIGIN"
+
+    # Rate Limiting (adjust as needed)
+    rate-limit:
+      rateLimit:
+        average: 100
+        burst: 50
+        period: 1s
+
+    # Compression
+    compression:
+      compress: {}
+
+    # Dashboard Auth (change credentials!)
+    dashboard-auth:
+      basicAuth:
+        users:
+          # admin:admin (Change this!)
+          # Generate with: echo $(htpasswd -nb admin your-password) | sed -e s/\\$/\\$\\$/g
+          - "admin:$$apr1$$8EVjn/nj$$GiLUZqcbuBWdvvRaAqv5X1"
