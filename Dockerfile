@@ -1,57 +1,59 @@
 # Use Node.js LTS as the base image
 FROM node:20-alpine AS base
 
-# Set environment variables
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
-# Install pnpm
-RUN npm install -g pnpm
+# Install dependencies needed for building (libc compatibility)
+RUN apk add --no-cache libc6-compat
 
 # Set working directory
 WORKDIR /app
 
-# Install dependencies only when needed
-FROM base AS deps
-WORKDIR /app
-
-# Copy package.json and lock file
-COPY package.json pnpm-lock.yaml ./
-
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+FROM base AS deps
 
-# Rebuild the source code only when needed
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install all dependencies (production + dev needed for build)
+RUN npm ci
+
+# Build the application
 FROM base AS builder
-WORKDIR /app
 
-# Copy node_modules from deps stage
+# Copy dependencies
 COPY --from=deps /app/node_modules ./node_modules
+
+# Copy source files
 COPY . .
 
-# Build the Next.js application (env vars are embedded here)
-RUN pnpm build
+# Set environment variables for build
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Production image, copy all the files and run next
+# Build the Next.js application
+RUN npm run build
+
+# Production image
 FROM base AS runner
-WORKDIR /app
 
-# Create a non-root user and set permissions
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-USER nextjs
+# Set production environment
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Create a non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
 # Copy necessary files from builder stage
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Expose the port the app will run on
+# Switch to non-root user
+USER nextjs
+
+# Expose the port
 EXPOSE 3000
-
-
 
 # Start the application
 CMD ["node", "server.js"]
