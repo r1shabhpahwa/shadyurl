@@ -49,13 +49,13 @@ export const UI_CONFIG = {
     builtBy: {
       text: "Built by",
       name: "Rishabh Pahwa",
-      url: "https://rishabhpahwa.com",
+      url: process.env.NEXT_PUBLIC_AUTHOR_URL || "https://rishabhpahwa.com",
     },
     sourceCode: {
       text: "View Source",
-      url: "https://github.com/rishabhpahwa/shadyurl", // Update with your actual repo URL
+      url: process.env.NEXT_PUBLIC_REPO_URL || "https://github.com/rishabhpahwa/shadyurl",
     },
   },
-} as const;
+};
 
 export type UIConfig = typeof UI_CONFIG;

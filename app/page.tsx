@@ -46,8 +46,30 @@ export default function Home() {
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(shortUrl);
-      toast.success(UI_CONFIG.toasts.copySuccess);
+      // Try modern clipboard API first
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(shortUrl);
+        toast.success(UI_CONFIG.toasts.copySuccess);
+      } else {
+        // Fallback for non-HTTPS contexts
+        const textArea = document.createElement("textarea");
+        textArea.value = shortUrl;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+
+        if (successful) {
+          toast.success(UI_CONFIG.toasts.copySuccess);
+        } else {
+          throw new Error("Copy failed");
+        }
+      }
     } catch (err) {
       toast.error(UI_CONFIG.toasts.copyError);
     }

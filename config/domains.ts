@@ -1,14 +1,20 @@
 /**
  * Domain configuration for the URL shortener
- * Add your domains here - all should point to this application
+ * Domains are read from DOMAINS environment variable (comma-separated)
+ * Falls back to localhost:3000 for development
  */
-export const DOMAINS = [
-  "localhost:3000",
-  // Add your custom domains here:
-  // "shadyurl.com",
-  // "totally-legit.link",
-  // "not-a-scam.io",
-] as const;
+const getDomainsFromEnv = (): string[] => {
+  const envDomains = process.env.DOMAINS || process.env.NEXT_PUBLIC_DOMAINS;
+
+  if (envDomains) {
+    return envDomains.split(',').map(d => d.trim()).filter(Boolean);
+  }
+
+  // Default to localhost for development
+  return ["localhost:3000"];
+};
+
+export const DOMAINS = getDomainsFromEnv();
 
 /**
  * Suspicious-looking subdomains that will be randomly selected
@@ -53,6 +59,6 @@ export const SUSPICIOUS_PATHS = [
   "review",
 ] as const;
 
-export type Domain = (typeof DOMAINS)[number];
+export type Domain = string;
 export type SuspiciousSubdomain = (typeof SUSPICIOUS_SUBDOMAINS)[number];
 export type SuspiciousPath = (typeof SUSPICIOUS_PATHS)[number];
