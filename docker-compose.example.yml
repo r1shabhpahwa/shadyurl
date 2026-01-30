@@ -4,28 +4,41 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # Build-time variables (NEXT_PUBLIC_*)
+        NEXT_PUBLIC_AUTHOR_URL: ${NEXT_PUBLIC_AUTHOR_URL:-https://domain.com}
+        NEXT_PUBLIC_REPO_URL: ${NEXT_PUBLIC_REPO_URL:-https://github.com/r1shabhpahwa/shadyurl}
     container_name: shady-app
     restart: unless-stopped
+    environment:
+      # Runtime environment variables
+      NODE_ENV: ${NODE_ENV:-production}
+      DATABASE_URL: ${DATABASE_URL}
+      DOMAINS: ${DOMAINS}
+    env_file:
+      - .env
     ports:
       - '3000:3000'
     networks:
       - shady-network
+    # depends_on:
+    #   - database
 
-  # --- Database Service ---
-  database:
-    image: postgres:15
-    container_name: shady-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-      POSTGRES_DB: shadydb
-    ports:
-      - 5432:5432
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      - shady-network
+  # # --- Database Service ---
+  # database:
+  #   image: postgres:15
+  #   container_name: shady-db
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_USER: user
+  #     POSTGRES_PASSWORD: pass
+  #     POSTGRES_DB: shadydb
+  #   ports:
+  #     - 5432:5432
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+  #   networks:
+  #     - shady-network
 
 networks:
   shady-network:

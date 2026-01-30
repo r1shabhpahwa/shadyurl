@@ -19,6 +19,10 @@ RUN npm ci
 # Build the application
 FROM base AS builder
 
+# Accept build arguments for NEXT_PUBLIC_* variables
+ARG NEXT_PUBLIC_AUTHOR_URL
+ARG NEXT_PUBLIC_REPO_URL
+
 # Copy dependencies
 COPY --from=deps /app/node_modules ./node_modules
 
@@ -27,6 +31,8 @@ COPY . .
 
 # Set environment variables for build
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_PUBLIC_AUTHOR_URL=$NEXT_PUBLIC_AUTHOR_URL
+ENV NEXT_PUBLIC_REPO_URL=$NEXT_PUBLIC_REPO_URL
 
 # Build the Next.js application
 RUN npm run build
